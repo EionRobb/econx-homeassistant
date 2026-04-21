@@ -1,0 +1,11 @@
+{
+  "domain": "econx",
+  "name": "Econx",
+  "codeowners": ["@eion"],
+  "config_flow": true,
+  "dependencies": [],
+  "documentation": "https://www.econnecx.com",
+  "iot_class": "cloud_polling",
+  "requirements": ["aiohttp"],
+  "version": "1.0.0"
+}
