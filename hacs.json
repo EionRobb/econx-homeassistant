@@ -1,5 +1,6 @@
 {
   "name": "Econx Home Assistant Custom Component",
   "render_readme": true,
-  "iot_class": "cloud_polling"
+  "iot_class": "cloud_polling",
+  "country": "NZ"
 }

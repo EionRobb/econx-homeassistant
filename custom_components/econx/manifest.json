@@ -1,10 +1,11 @@
 {
   "domain": "econx",
   "name": "Econx",
-  "codeowners": ["@eion"],
+  "codeowners": ["@eionrobb"],
   "config_flow": true,
   "dependencies": [],
-  "documentation": "https://www.econnecx.com",
+  "documentation": "https://github.com/EionRobb/econx-homeassistant",
+  "issue_tracker": "https://github.com/EionRobb/econx-homeassistant/issues",
   "iot_class": "cloud_polling",
   "requirements": ["aiohttp"],
   "version": "1.0.0"
