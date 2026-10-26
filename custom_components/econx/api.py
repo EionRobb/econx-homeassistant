@@ -82,14 +82,20 @@ class EconxApiClient:
         if not self.token:
             await self.async_login()
 
-        resp = await self._async_request(method, params, data)
-        if resp.get("status") == 0:
-             # Try refreshing auth
-             await self.async_login()
-             resp = await self._async_request(method, params, data)
-             if resp.get("status") == 0:
-                 raise EconxAuthError("Token expired")
-             
+        # The legacy API requires a code field for protected misc commands,
+        # even when no PIN is supplied (as in the PHP client).
+        payload = {"code": ""}
+        if data:
+            payload.update(data)
+        resp = await self._async_request(method, params, payload)
+        status = str(resp.get("status"))
+        if status == "0":
+            raise EconxApiClientError("Econx rejected the action: incorrect or missing PIN")
+        if status == "2":
+            raise EconxApiClientError("Econx rejected the action: security restriction")
+        if status != "1":
+            raise EconxApiClientError("Econx returned an unexpected action status")
+
         return resp
 
     async def _async_request(self, method: str, params: Dict[str, Any] = None, data: Dict[str, Any] = None) -> Dict[str, Any]:
