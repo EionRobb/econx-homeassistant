@@ -82,7 +82,8 @@ class EconxSwitch(CoordinatorEntity, SwitchEntity):
             method, 
             params={"deviceid": self._device_id, "index": self._index + 1}
         )
-        await self.coordinator.async_request_refresh()
+        self.coordinator.optimistic_update(self._device_id, self._device_type, self._index, "1")
+        self.coordinator.refresh_in_background()
 
     async def async_turn_off(self, **kwargs) -> None:
         """Turn the switch off."""
@@ -91,4 +92,5 @@ class EconxSwitch(CoordinatorEntity, SwitchEntity):
             method, 
             params={"deviceid": self._device_id, "index": self._index + 1}
         )
-        await self.coordinator.async_request_refresh()
+        self.coordinator.optimistic_update(self._device_id, self._device_type, self._index, "0")
+        self.coordinator.refresh_in_background()
