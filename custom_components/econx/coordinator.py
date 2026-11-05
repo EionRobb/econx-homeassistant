@@ -1,5 +1,6 @@
 """DataUpdateCoordinator for Econx."""
 import logging
+from copy import deepcopy
 from datetime import timedelta
 
 from homeassistant.config_entries import ConfigEntry
@@ -39,3 +40,19 @@ class EconxDataUpdateCoordinator(DataUpdateCoordinator):
             raise UpdateFailed(f"Error communicating with API: {err}") from err
         except Exception as err:
             raise UpdateFailed(f"Unexpected error: {err}") from err
+
+    def optimistic_update(self, device_id: str, device_type: str, index: int, status: str) -> None:
+        """Publish a successful command immediately, pending the next API poll."""
+        if not self.data or device_id not in self.data:
+            return
+        key = "relay" if device_type == "relay" else "miscdevice"
+        items = self.data[device_id].get("status", {}).get(key, [])
+        if index >= len(items):
+            return
+        updated = deepcopy(self.data)
+        updated[device_id]["status"][key][index]["status"] = status
+        self.async_set_updated_data(updated)
+
+    def refresh_in_background(self) -> None:
+        """Reconcile optimistic state with the authoritative cloud state."""
+        self.hass.async_create_task(self.async_request_refresh())
