@@ -49,8 +49,10 @@ class EconxApiClient:
                 
                 self.token = data.get("token")
                 return self.token
-        except Exception as err:
-            raise EconxAuthError("Failed to login to Econx") from err
+        except EconxAuthError:
+            raise
+        except (aiohttp.ClientError, TimeoutError, ValueError, TypeError, KeyError) as err:
+            raise EconxApiClientError("Unable to complete Econx login") from err
 
     async def async_get_data(self) -> Dict[str, Any]:
         """Get the full device list and their statuses."""
@@ -58,11 +60,11 @@ class EconxApiClient:
             await self.async_login()
 
         device_list_data = await self._async_request("getDeviceList")
-        if device_list_data.get("status") == 0:
+        if str(device_list_data.get("status")) == "0":
             # Token might be expired, try to login again
             await self.async_login()
             device_list_data = await self._async_request("getDeviceList")
-            if device_list_data.get("status") == 0:
+            if str(device_list_data.get("status")) == "0":
                 raise EconxAuthError("Token expired and re-login failed")
 
         devices = device_list_data.get("devicelist", {})
@@ -115,8 +117,8 @@ class EconxApiClient:
                 response.raise_for_status()
                 text = await response.text()
                 return self._lowercase_keys(json.loads(text))
-        except Exception as err:
-            raise EconxApiClientError(f"API request failed: {err}") from err
+        except (aiohttp.ClientError, TimeoutError, ValueError, TypeError) as err:
+            raise EconxApiClientError("Econx API request failed") from err
 
     def _lowercase_keys(self, obj: Any) -> Any:
         """Recursively lowercase dictionary keys."""
