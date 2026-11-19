@@ -2,7 +2,7 @@
 import logging
 from datetime import timedelta
 
-from homeassistant.config_entries import ConfigEntry
+from homeassistant.config_entries import ConfigEntry, ConfigEntryAuthFailed
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers.aiohttp_client import async_get_clientsession
 from homeassistant.helpers.update_coordinator import DataUpdateCoordinator, UpdateFailed
@@ -34,8 +34,6 @@ class EconxDataUpdateCoordinator(DataUpdateCoordinator):
         try:
             return await self.client.async_get_data()
         except EconxAuthError as err:
-            raise UpdateFailed(f"Auth error: {err}") from err
+            raise ConfigEntryAuthFailed("Econx authentication failed") from err
         except EconxApiClientError as err:
-            raise UpdateFailed(f"Error communicating with API: {err}") from err
-        except Exception as err:
-            raise UpdateFailed(f"Unexpected error: {err}") from err
+            raise UpdateFailed("Unable to communicate with Econx") from err

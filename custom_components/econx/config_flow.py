@@ -37,8 +37,8 @@ async def validate_input(hass: HomeAssistant, data: dict[str, Any]) -> dict[str,
          await client.async_login()
     except EconxAuthError:
         raise InvalidAuth
-    except Exception:
-        raise CannotConnect
+    except EconxApiClientError as err:
+        raise CannotConnect from err
 
     # Return info that you want to store in the config entry.
     return {"title": data[CONF_EMAIL]}
@@ -65,6 +65,8 @@ class ConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
                 _LOGGER.exception("Unexpected exception")
                 errors["base"] = "unknown"
             else:
+                await self.async_set_unique_id(user_input[CONF_EMAIL].strip().casefold())
+                self._abort_if_unique_id_configured()
                 return self.async_create_entry(title=info["title"], data=user_input)
 
         return self.async_show_form(
